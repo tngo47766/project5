@@ -25,6 +25,8 @@ async function dbLoad() {
   const mapFakeId2RealId = {};
   for (const user of userModels) {
     userObj = new User({
+      login_name: user.login_name.trim(),
+      password: user.password.trim(),
       first_name: user.first_name,
       last_name: user.last_name,
       location: user.location,
@@ -55,6 +57,7 @@ async function dbLoad() {
       file_name: photo.file_name,
       date_time: photo.date_time,
       user_id: mapFakeId2RealId[photo.user_id],
+      title: photo.title,
     });
     photo.objectID = photoObj._id;
     if (photo.comments) {

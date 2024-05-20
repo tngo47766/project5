@@ -3,8 +3,9 @@ const User = require("../db/userModel");
 const router = express.Router();
 const Photo = require("../db/photoModel");
 const mongoose = require('mongoose');
+const jwtAuth = require("../middleware/jwtAuth");
 router.post("/", async (request, response) => {
-  
+ 
 });
 
 router.get('/list', async (req, res) => {
@@ -17,10 +18,10 @@ router.get('/list', async (req, res) => {
 });
 
 
-// Endpoint GET /user/:id: Trả về thông tin chi tiết người dùng
+
 router.get('/:id', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id, '_id first_name last_name location description occupation');
+        const user = await User.findById(req.params.id, '_id first_name last_name location description occupation login_name');
         if (!user) {
             return res.status(400).send({ error: "Không tìm thấy người dùng" });
         }
@@ -29,29 +30,28 @@ router.get('/:id', async (req, res) => {
         res.status(400).send({ error: "ID người dùng không hợp lệ" });
     }
 });
-// router.get('/photosOfUser/:id', async (req, res) => {
-//     try {
-//       const userId = req.params.id;
-  
-//       // Kiểm tra xem người dùng có tồn tại không
-//       const userExists = await User.exists({ _id: userId });
-//       if (!userExists) {
-//         return res.status(400).send({ error: "Người dùng không tồn tại" });
-//       }
-//       const photos = await Photo.find({ user_id: userId })
-//                                 .select('_id user_id comments file_name date_time');
-  
-//     //   Kiểm tra xem người dùng có ảnh nào không
-//       if (photos.length === 0) {
-//         return res.status(404).send({ error: "Không có ảnh nào cho người dùng này" });
-//       }
-  
-//       res.send(photos);
-//     } catch (error) {
-//       res.status(500).send({ error: "Đã xảy ra lỗi" });
-//     }
-//   });
 
+router.post("/update", jwtAuth, async (req, res) => {
+    try {
+      const userId = req.userId; 
+      const updateData = req.body;
+      console.log(userId, req.body.userId);
+      
+      
+      const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+  
+      if (!updatedUser) {
+        return res.status(404).send({ error: "User not found" });
+      }
+  
+      
+      const { password, ...userData } = updatedUser.toObject();
+      res.send(userData);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({ error: "Internal server error" });
+    }
+  });
 
   
 
